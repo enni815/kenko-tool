@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50代からの健康目標設定＆お悩み相談ツール</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            color: #333;
+            background-color: #f4f6f9;
+        }
+        h1, h2 {
+            color: #005a9c;
+            text-align: center;
+        }
+        h2 {
+            text-align: left;
+            border-bottom: 2px solid #005a9c;
+            padding-bottom: 10px;
+        }
+        h3 {
+             color: #003f6f;
+        }
+        .tool-section {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .input-group {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        input[type="number"], select, textarea {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 150px;
+        }
+        select, textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        input[type="radio"] + label {
+            margin-right: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            display: block;
+            margin: 20px auto 0;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results, #trouble-advice, #ai-response {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e9f5ff;
+            border-radius: 8px;
+            border-left: 5px solid #007bff;
+        }
+        .ai-disclaimer {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #dc3545;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .advice-section ul {
+            list-style-type: '✓ ';
+            padding-left: 20px;
+        }
+        .advice-section li {
+            margin-bottom: 10px;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>50代からの健康目標設定＆お悩み相談ツール</h1>
+
+    <div class="tool-section">
+        <h2>パーソナル健康目標設定</h2>
+        <!-- 目標設定フォームは変更なし -->
+        <div class="input-group">
+            <label for="height">身長 (cm):</label>
+            <input type="number" id="height" placeholder="例: 170">
+        </div>
+        <div class="input-group">
+            <label for="currentWeight">現在の体重 (kg):</label>
+            <input type="number" id="currentWeight" placeholder="例: 75">
+        </div>
+        <div class="input-group">
+            <label for="targetWeight">目標体重 (kg):</label>
+            <input type="number" id="targetWeight" placeholder="例: 68">
+        </div>
+        <div class="input-group">
+            <label>性別:</label>
+            <div>
+                <input type="radio" id="male" name="gender" value="male" checked>
+                <label for="male">男性</label>
+                <input type="radio" id="female" name="gender" value="female">
+                <label for="female">女性</label>
+            </div>
+        </div>
+        <button onclick="calculateHealthPlan()">計画とアドバイスを表示</button>
+        <div id="results" style="display: none;"></div>
+    </div>
+
+    <div class="tool-section">
+        <h2>お悩み相談アドバイザー</h2>
+        <div class="input-group">
+            <label for="trouble-select">よくある悩み:</label>
+            <select id="trouble-select" onchange="showDropdownAdvice()">
+                <option value="">選択してください...</option>
+                <option value="stagnation">体重が減らなくなった（停滞期）</option>
+                <option value="snacking">つい間食してしまう</option>
+                <option value="motivation">やる気が続かない</option>
+                <option value="eating_out">外食や飲み会が多い</option>
+                <option value="no_time">運動する時間がない</option>
+            </select>
+        </div>
+        <div id="trouble-advice" style="display: none;"></div>
+    </div>
+
+    <div class="tool-section">
+        <h2>AI健康相談チャット (ベータ版)</h2>
+        <div class="ai-disclaimer">
+            【重要】このAIによるアドバイスは、医学的・専門的な診断や治療に代わるものではありません。あくまで一般的な情報提供として、ご自身の責任の範囲で参考にしてください。健康に関する最終的な判断は、必ず医師や専門家にご相談ください。
+        </div>
+        <div class="input-group">
+             <label for="ai-query">お悩み相談:</label>
+             <textarea id="ai-query" placeholder="例：最近、運動するやる気が出ません。どうしたらいいですか？"></textarea>
+        </div>
+        <button onclick="getAiAdvice()">AIに相談する</button>
+        <div id="ai-response" style="display: none;"></div>
+    </div>
+
+    <p class="note">
+        このツールは健康管理の意識を高めるためのものであり、医学的な診断や治療を代替するものではありません。<br>具体的な健康計画については、必ずかかりつけの医師や専門家にご相談ください。
+    </p>
+
+<script>
+// 目標設定の計算ロジック (変更なし)
+function calculateHealthPlan() {
+    const height = parseFloat(document.getElementById('height').value);
+    const currentWeight = parseFloat(document.getElementById('currentWeight').value);
+    const targetWeight = parseFloat(document.getElementById('targetWeight').value);
+    const gender = document.querySelector('input[name="gender"]:checked').value;
+    const resultsDiv = document.getElementById('results');
+
+    if (isNaN(height) || isNaN(currentWeight) || isNaN(targetWeight) || height <= 0 || currentWeight <= 0 || targetWeight <= 0) {
+        resultsDiv.innerHTML = "<p style='color: red;'>すべての項目に有効な数値を入力してください。</p>";
+        resultsDiv.style.display = 'block';
+        return;
+    }
+
+    if (currentWeight <= targetWeight) {
+        resultsDiv.innerHTML = "<p style='color: orange;'>目標体重は現在の体重より軽い数値を設定してください。</p>";
+        resultsDiv.style.display = 'block';
+        return;
+    }
+
+    const heightInMeters = height / 100;
+    const bmi = currentWeight / (heightInMeters * heightInMeters);
+    let bmiStatus = '';
+    if (bmi < 18.5) bmiStatus = '低体重';
+    else if (bmi < 25) bmiStatus = '普通体重';
+    else if (bmi < 30) bmiStatus = '肥満（1度）';
+    else if (bmi < 35) bmiStatus = '肥満（2度）';
+    else bmiStatus = '肥満（3度以上）';
+
+    const weightToLose = currentWeight - targetWeight;
+    const monthlyLoss = Math.min(2, currentWeight * 0.03);
+    const monthsNeeded = Math.ceil(weightToLose / monthlyLoss);
+
+    let scheduleHtml = '<h3>減量スケジュール（目安）</h3><ul>';
+    let scheduledWeight = currentWeight;
+    for (let i = 1; i <= monthsNeeded; i++) {
+        scheduledWeight -= monthlyLoss;
+        scheduleHtml += `<li>${i}ヶ月後: <strong>${scheduledWeight.toFixed(1)} kg</strong></li>`;
+    }
+    scheduleHtml += '</ul>';
+
+    let adviceHtml = '<h3>あなたへの健康アドバイス</h3>';
+    if (gender === 'male') {
+        adviceHtml += "<div class='advice-section'><p><strong>食事について：</strong></p><ul>"
+            + "<li>内臓脂肪を減らすため、揚げ物やラーメンなど脂質の多い食事を控える。</li>"
+            + "<li>筋肉の材料となるたんぱく質（赤身肉、鶏胸肉、魚、大豆）をしっかり摂る。</li>"
+            + "<li>お酒の量を管理し、休肝日を週2日以上設けることを目指す。</li></ul>"
+            + "<p><strong>運動について：</strong></p><ul>"
+            + "<li>お腹周りの脂肪燃焼に効果的な、やや早歩きのウォーキングを習慣にする。</li>"
+            + "<li>大きな筋肉を鍛えるスクワットや腕立て伏せで、基礎代謝の低下を防ぐ。</li>"
+            + "<li>ゴルフや釣りなどの趣味と運動を組み合わせるのも長続きのコツです。</li></ul></div>";
+    } else { // female
+        adviceHtml += "<div class='advice-section'><p><strong>食事について：</strong></p><ul>"
+            + "<li>骨の健康を意識し、カルシウム（乳製品、小魚、緑黄色野菜）とビタミンD（きのこ類、魚）を積極的に摂る。</li>"
+            + "<li>ホルモンバランスを整える働きのあるイソフラボンを含む大豆製品（豆腐、納豆など）を取り入れる。</li>"
+            + "<li>体の冷えを防ぐため、温かい飲み物や生姜などの食材を意識する。</li></ul>"
+            + "<p><strong>運動について：</strong></p><ul>"
+            + "<li>骨に刺激を与えるウォーキングやスロージョギングが骨粗しょう症予防におすすめ。</li>"
+            + "<li>ヨガやストレッチで、しなやかな体と心のバランスを保つ。</li>"
+            + "<li>仲間と一緒にできるダンスや体操教室なども楽しく続けやすいです。</li></ul></div>";
+    }
+
+    resultsDiv.innerHTML = `
+        <h3>あなたの健康状態と目標</h3>
+        <p>現在のBMIは <strong>${bmi.toFixed(2)}</strong> で、<strong>${bmiStatus}</strong> の範囲です。</p>
+        <p>目標達成（${weightToLose.toFixed(1)} kg減）までの期間の目安は、約 <strong>${monthsNeeded} ヶ月</strong>です。</p>
+        ${scheduleHtml}
+        ${adviceHtml}
+    `;
+    resultsDiv.style.display = 'block';
+}
+
+// ドロップダウンのアドバイス表示ロジック
+function showDropdownAdvice() {
+    const trouble = document.getElementById('trouble-select').value;
+    const adviceDiv = document.getElementById('trouble-advice');
+    let adviceContent = '';
+
+    if (!trouble) {
+        adviceDiv.style.display = 'none';
+        return;
+    }
+
+    switch (trouble) {
+        case 'stagnation':
+            adviceContent = "<h3>停滞期のアドバイス</h3><div class='advice-section'><ul><li>食事内容や食べる順番を変えてみましょう。</li><li>いつもと違う運動で筋肉に新しい刺激を与えましょう。</li><li>週に1度のチートデイで代謝を再活性化させるのも手です。</li></ul></div>";
+            break;
+        case 'snacking':
+            adviceContent = "<h3>間食対策のアドバイス</h3><div class='advice-section'><ul><li>間食にはナッツやヨーグルトなど質の良いものを選びましょう。</li><li>「15時に食べる」など時間を決め、だらだら食べを防ぎます。</li><li>温かいお茶などを飲んで、空腹感を紛らわせるのも有効です。</li></ul></div>";
+            break;
+        case 'motivation':
+            adviceContent = "<h3>やる気を維持するアドバイス</h3><div class='advice-section'><ul><li>「まず3日」など短期目標の達成感を積み重ねましょう。</li><li>体重だけでなく「一駅歩いた」などの行動も記録しましょう。</li><li>「1kg減ったら映画」など、自分へのご褒美も大切です。</li></ul></div>";
+            break;
+        case 'eating_out':
+            adviceContent = "<h3>外食・飲み会のアドバイス</h3><div class='advice-section'><ul><li>揚げ物より焼き物、丼ものより定食を選びましょう。</li><li>食べる前に野菜ジュースを飲むと血糖値の急上昇を抑えられます。</li><li>食べ過ぎたら翌日の食事で調整すれば大丈夫です。</li></ul></div>";
+            break;
+        case 'no_time':
+            adviceContent = "<h3>時間がない時の運動アドバイス</h3><div class='advice-section'><ul><li>歯磨き中にかかと上げなど「ながら運動」を習慣にしましょう。</li><li>週末にまとめて運動するだけでも効果はあります。</li><li>4-5分でできる高強度インターバルトレーニングもおすすめです。</li></ul></div>";
+            break;
+    }
+    adviceDiv.innerHTML = adviceContent;
+    adviceDiv.style.display = 'block';
+}
+
+// AIチャット風の応答ロジック
+function getAiAdvice() {
+    const query = document.getElementById('ai-query').value.toLowerCase();
+    const responseDiv = document.getElementById('ai-response');
+    let responseContent = '<h3>AIからのアドバイス</h3>';
+
+    if (query.trim() === '') {
+        responseContent += "<p>ご相談内容を入力してくださいね。</p>";
+        responseDiv.innerHTML = responseContent;
+        responseDiv.style.display = 'block';
+        return;
+    }
+
+    if (query.includes('モチベーション') || query.includes('やる気')) {
+        responseContent += "<p>やる気が出ない時は、誰にでもありますよ。完璧を目指さず、まずは「今日は5分だけ歩く」のように、ハードルをとても低く設定してみませんか？小さな一歩が、次の一歩につながります。</p>";
+    } else if (query.includes('お菓子') || query.includes('間食') || query.includes('食べたい')) {
+        responseContent += "<p>間食したくなる気持ち、よく分かります。そんな時は、まず温かいお茶を一杯飲んでみてはいかがでしょう。それでも食べたければ、スナック菓子ではなく、素焼きのナッツやギリシャヨーグルトなど、たんぱく質や良質な脂質が摂れるものを選ぶのがおすすめですよ。</p>";
+    } else if (query.includes('停滞') || query.includes('減らない')) {
+        responseContent += "<p>停滞期は、体が変化に適応しようとしている証拠です。素晴らしい進歩の証ですよ。ここで焦りは禁物です。いつもと違う運動を試したり、食べる順番を変えたりと、少しだけ変化を加えるのが乗り越えるコツです。</p>";
+    } else if (query.includes('運動') || query.includes('時間がない')) {
+        responseContent += "<p>お忙しいのですね。まとまった時間がなくても大丈夫。「エレベーターを階段にする」「テレビを見ながらストレッチ」など、生活の中に小さな運動を取り入れる『ながら運動』から始めてみませんか？</p>";
+    } else if (query.includes('食事') || query.includes('レシピ')) {
+        responseContent += "<p>食事管理、素晴らしいですね。50代からは特にたんぱく質が重要です。鶏胸肉や豆腐、青魚などを毎食取り入れることを意識してみてください。蒸し料理やスープにすると、カサも減って野菜もたくさん食べられますよ。</p>";
+    } else if (query.includes('ありがとう') || query.includes('こんにちは')) {
+        responseContent += "<p>こちらこそ、ご利用ありがとうございます！いつでもお気軽にご相談くださいね。</p>";
+    } else {
+        responseContent += "<p>ご相談ありがとうございます。もう少し具体的なお悩み（例えば「間食」や「運動の時間」など）を教えていただくと、より的確なアドバイスができますので、お手数ですが、少し言葉を変えて質問してみてくださいね。</p>";
+    }
+
+    responseDiv.innerHTML = responseContent;
+    responseDiv.style.display = 'block';
+}
+
+</script>
+
+</body>
+</html>
